@@ -3,7 +3,7 @@
 """
 NLP A4 2023
 parser_transitions.py: Algorithms for completing partial parsess.
-Authors: Sahil Chopra, Haoshen Hong, Nathan Schneider, Lucia Donatelli
+Authors: Willem Huijzer, Elise de Koning and Florence Cornelissen
 """
 
 import sys
@@ -35,6 +35,9 @@ class PartialParse(object):
 
         ### END YOUR CODE
 
+        self.stack = ['ROOT']
+        self.buffer = list(sentence)
+        self.dependencies = []
 
     def parse_step(self, transition):
         """Performs a single parse step by applying the given transition to this partial parse
@@ -53,6 +56,15 @@ class PartialParse(object):
 
 
         ### END YOUR CODE
+
+        if transition == 'S':
+            self.stack.append(self.buffer.pop(0))
+        elif transition == 'LA':
+            self.dependencies.append((self.stack[-1], self.stack.pop(-2)))
+        elif transition == 'RA':
+            self.dependencies.append((self.stack[-2], self.stack.pop(-1)))
+        else:
+            raise ValueError("Transition not recognized")
 
     def parse(self, transitions):
         """Applies the provided transitions to this PartialParse
