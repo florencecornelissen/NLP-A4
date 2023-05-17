@@ -122,7 +122,10 @@ class ParserModel(nn.Module):
         ### END YOUR CODE
 
         # 1) For each index `i` in `w`, select `i`th vector from self.embeddings
-        x = torch.index_select(self.embeddings, 0, w) #Select the ith vector from self.embeddings
+        select = [nn.index_select(self.embeddings[i], 0, i) for i in w]
+
+        # # 1) For each index `i` in `w`, select `i`th vector from self.embeddings
+        # x = [nn.index_select(self.embeddings[i], i, ) for i in w ] #Select the ith vector from self.embeddings for each index i in w
 
 
         return x
