@@ -124,12 +124,12 @@ def minibatch_parse(sentences, model, batch_size):
     partial_parses = [PartialParse(sentence) for sentence in sentences] #Create a list of partial parses for each sentence
     unfinished_parses = copy.copy(partial_parses) #Create a shallow copy of the partial parses
     while unfinished_parses: #While there are still unfinished parses
-        minibatch = unfinished_parses[:batch_size] #Create a minibatch of size batch_size
-        transitions = model.predict(minibatch) #Predict the next transition for each partial parse in the minibatch
-        for i in range(len(minibatch)): #For each partial parse in the minibatch
-            minibatch[i].parse_step(transitions[i]) #Parse the partial parse with the predicted transition
-            if len(minibatch[i].stack) == 1 and len(minibatch[i].buffer) == 0: #If the partial parse is finished
-                unfinished_parses.remove(minibatch[i]) #Remove the partial parse from the unfinished parses
+        minibatch = unfinished_parses[0:batch_size] #Create a minibatch of size batch_size
+        nexttransitions = model.predict(minibatch) #Predict the next transition for each partial parse in the minibatch
+        for sentence in range(len(minibatch)): #For each partial parse in the minibatch
+            minibatch[sentence].parse_step(nexttransitions[sentence]) #Parse the partial parse with the predicted transition
+            if len(minibatch[sentence].buffer) == 0 and len(minibatch[sentence].stack) == 1: #If the partial parse is finished
+                unfinished_parses.remove(minibatch[sentence]) #Remove the partial parse from the unfinished parses
     dependencies = [partial_parse.dependencies for partial_parse in partial_parses] #Create a list of dependencies for each partial parse
 
     return dependencies

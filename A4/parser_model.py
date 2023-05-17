@@ -72,11 +72,24 @@ class ParserModel(nn.Module):
         ### 
         ### See the PDF for hints.
 
-
-
-
         ### END YOUR CODE
 
+        # 1) Declare self.embed_to_hidden_weight and self.embed_to_hidden_bias as nn.Parameter
+        self.embed_to_hidden_weight = nn.Parameters(torch.empty(self.n_features*self.embed_size, hidden_size)) #Contruct the weight matrix (W) from hidden layer
+        nn.init.xavier_uniform_(self.embed_to_hidden_weight) #Initialize the weight matrix (W) from hidden layer
+        self.embed_to_hidden_bias = nn.Parameter(torch.empty(self.hidden_size, 1)) #Construct the bias matrix (b1) from hidden layer
+        nn.init.uniform_(self.embed_to_hidden_bias) #Initialize the bias matrix (b1) from hidden layer
+
+        # 2) Construct self.dropout layer
+        self.dropout = nn.Dropout(self.dropout_prob) #Construct the dropout layer with probability dropout_prob
+
+        # 3) Declare self.hidden_to_logits_weight and self.hidden_to_logits_bias as nn.Parameter
+        self.hidden_to_logits_weight = nn.Parameter(torch.empty(self.hidden_size, self.n_classes)) #Construct the weight matrix (U) from hidden layer
+        nn.init.xavier_uniform_(self.hidden_to_logits_weight) #Initialize the weight matrix (U) from hidden layer
+        self.hidden_to_logits_bias = nn.Parameter(torch.empty(self.n_classes, 1)) #Construct the bias matrix (b2) from hidden layer
+        nn.init.uniform_(self.hidden_to_logits_bias) #Initialize the bias matrix (b2) from hidden layer
+
+        
     def embedding_lookup(self, w):
         """ Utilize `w` to select embeddings from embedding matrix `self.embeddings`
             @param w (Tensor): input tensor of word indices (batch_size, n_features)
@@ -106,9 +119,12 @@ class ParserModel(nn.Module):
         ###     View: https://pytorch.org/docs/stable/tensors.html#torch.Tensor.view
         ###     Flatten: https://pytorch.org/docs/stable/generated/torch.flatten.html
 
-
-
         ### END YOUR CODE
+
+        # 1) For each index `i` in `w`, select `i`th vector from self.embeddings
+        x = torch.index_select(self.embeddings, 0, w) #Select the ith vector from self.embeddings
+
+
         return x
 
 
