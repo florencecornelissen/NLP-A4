@@ -35,9 +35,9 @@ class PartialParse(object):
 
         ### END YOUR CODE
 
-        self.stack = ['ROOT']
-        self.buffer = list(sentence)
-        self.dependencies = []
+        self.stack = ["ROOT"] #Create the stack with the root initially
+        self.buffer = list(sentence) #Create the buffer with the sentence
+        self.dependencies = [] #Create the dependencies list, which is empty initially
 
     def parse_step(self, transition):
         """Performs a single parse step by applying the given transition to this partial parse
@@ -58,13 +58,16 @@ class PartialParse(object):
         ### END YOUR CODE
 
         if transition == 'S':
-            self.stack.append(self.buffer.pop(0))
+            self.stack.append(self.buffer[0]) #Append first item from buffer to stack
+            self.buffer.pop(0) #Remove first item from buffer
         elif transition == 'LA':
-            self.dependencies.append((self.stack[-1], self.stack.pop(-2)))
+            self.dependencies.append((self.stack[-1], self.stack[-2])) #Append tuple of last two items from stack to dependencies
+            self.stack.pop(-2) #Remove second to last item from stack
         elif transition == 'RA':
-            self.dependencies.append((self.stack[-2], self.stack.pop(-1)))
+            self.dependencies.append((self.stack[-2], self.stack[-1])) #Append tuple of last two items from stack to dependencies
+            self.stack.pop(-1)
         else:
-            raise ValueError("Transition not recognized")
+            raise ValueError("This transition is not valid")
 
     def parse(self, transitions):
         """Applies the provided transitions to this PartialParse
