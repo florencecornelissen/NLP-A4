@@ -121,15 +121,10 @@ class ParserModel(nn.Module):
 
         ### END YOUR CODE
 
-        x = self.embeddings[w]
-        x = x.view(w.size(0), -1)
+        x = self.embeddings[w]  # vector is created with for each index in w the embedding for the word
+        batchsize = x.size(0) # batchsize is the first dimension of x
+        x = x.view(batchsize, -1)  # reshape with view to a 2d tensor
 
-        # Selecting the embeddings of the words
-        # x = torch.index_select(self.embeddings, 0, w.view(-1)) #
-    
-        # # Reshaping the tensor to (batch_size, n_features*embed_size)
-        # x = x.view(w.size(0), -1)
-    
         return x
 
 
@@ -164,12 +159,11 @@ class ParserModel(nn.Module):
         ###     Matrix product: https://pytorch.org/docs/stable/torch.html#torch.matmul
         ###     ReLU: https://pytorch.org/docs/stable/nn.html?highlight=relu#torch.nn.functional.relu
 
-        logits = None
-        x = self.embedding_lookup(w) #Get the embeddings for words represented in w
-        x = torch.matmul(x, self.embed_to_hidden_weight) + self.embed_to_hidden_bias #Compute the hidden layer
-        x = torch.relu(x) #Apply the ReLU function
-        x = torch.nn.Dropout(x) #Apply the dropout layer
-        logits = torch.matmul(x, self.hidden_to_logits_weight) + self.hidden_to_logits_bias #Compute the output layer
+        x = self.embedding_lookup(w) # get the embedding for the words in w
+        x = torch.matmul(x, self.embed_to_hidden_weight) + self.embed_to_hidden_bias # matrix multiplication with W and add b1
+        h = F.relu(x) # apply relu
+        h = self.dropout(x) # apply dropout
+        logits = torch.matmul(h, self.hidden_to_logits_weight) + self.hidden_to_logits_bias # matrix multiplication with U and add b2
 
         ### END YOUR CODE
         return logits
