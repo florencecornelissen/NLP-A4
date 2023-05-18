@@ -43,8 +43,8 @@ class ParserModel(nn.Module):
         self.n_features = n_features
         self.n_classes = n_classes
         self.dropout_prob = dropout_prob
-        self.embed_size = embeddings.shape[1]
         self.hidden_size = hidden_size
+        self.embed_size = embeddings.shape[1]
         self.embeddings = nn.Parameter(torch.tensor(embeddings))
 
         ### YOUR CODE HERE (~9-10 Lines)
@@ -75,7 +75,7 @@ class ParserModel(nn.Module):
         ### END YOUR CODE
 
         # 1) Declare self.embed_to_hidden_weight and self.embed_to_hidden_bias as nn.Parameter
-        self.embed_to_hidden_weight = nn.Parameters(torch.empty(self.n_features*self.embed_size, hidden_size)) #Contruct the weight matrix (W) from hidden layer
+        self.embed_to_hidden_weight = nn.Parameter(torch.empty(self.n_features*self.embed_size, hidden_size)) #Contruct the weight matrix (W) from hidden layer
         nn.init.xavier_uniform_(self.embed_to_hidden_weight) #Initialize the weight matrix (W) from hidden layer
         self.embed_to_hidden_bias = nn.Parameter(torch.empty(self.hidden_size, 1)) #Construct the bias matrix (b1) from hidden layer
         nn.init.uniform_(self.embed_to_hidden_bias) #Initialize the bias matrix (b1) from hidden layer
@@ -121,13 +121,15 @@ class ParserModel(nn.Module):
 
         ### END YOUR CODE
 
-        # 1) For each index `i` in `w`, select `i`th vector from self.embeddings
-        select = [nn.index_select(self.embeddings[i], 0, i) for i in w]
+        x = self.embeddings[w]
+        x = x.view(w.size(0), -1)
 
-        # # 1) For each index `i` in `w`, select `i`th vector from self.embeddings
-        # x = [nn.index_select(self.embeddings[i], i, ) for i in w ] #Select the ith vector from self.embeddings for each index i in w
-
-
+        # Selecting the embeddings of the words
+        # x = torch.index_select(self.embeddings, 0, w.view(-1)) #
+    
+        # # Reshaping the tensor to (batch_size, n_features*embed_size)
+        # x = x.view(w.size(0), -1)
+    
         return x
 
 
@@ -162,6 +164,12 @@ class ParserModel(nn.Module):
         ###     Matrix product: https://pytorch.org/docs/stable/torch.html#torch.matmul
         ###     ReLU: https://pytorch.org/docs/stable/nn.html?highlight=relu#torch.nn.functional.relu
 
+        logits = None
+        x = self.embedding_lookup(w) #Get the embeddings for words represented in w
+        x = torch.matmul(x, self.embed_to_hidden_weight) + self.embed_to_hidden_bias #Compute the hidden layer
+        x = torch.relu(x) #Apply the ReLU function
+        x = torch.nn.Dropout(x) #Apply the dropout layer
+        logits = torch.matmul(x, self.hidden_to_logits_weight) + self.hidden_to_logits_bias #Compute the output layer
 
         ### END YOUR CODE
         return logits
