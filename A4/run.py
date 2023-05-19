@@ -59,7 +59,7 @@ def train(parser, train_data, dev_data, output_path, batch_size=1024, n_epochs=1
 
     ### END YOUR CODE
 
-    for epoch in range(n_epochs):gi
+    for epoch in range(n_epochs):
         print("Epoch {:} out of {:}".format(epoch + 1, n_epochs))
         dev_UAS = train_for_epoch(parser, train_data, dev_data, optimizer, loss_func, batch_size)
         if dev_UAS > best_dev_UAS:

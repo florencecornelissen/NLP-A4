@@ -77,7 +77,7 @@ class ParserModel(nn.Module):
         # 1) Declare self.embed_to_hidden_weight and self.embed_to_hidden_bias as nn.Parameter
         self.embed_to_hidden_weight = nn.Parameter(torch.empty(self.n_features*self.embed_size, hidden_size)) #Contruct the weight matrix (W) from hidden layer
         nn.init.xavier_uniform_(self.embed_to_hidden_weight) #Initialize the weight matrix (W) from hidden layer
-        self.embed_to_hidden_bias = nn.Parameter(torch.empty(self.hidden_size, 1)) #Construct the bias matrix (b1) from hidden layer
+        self.embed_to_hidden_bias = nn.Parameter(torch.empty(self.hidden_size)) #Construct the bias matrix (b1) from hidden layer
         nn.init.uniform_(self.embed_to_hidden_bias) #Initialize the bias matrix (b1) from hidden layer
 
         # 2) Construct self.dropout layer
@@ -86,7 +86,7 @@ class ParserModel(nn.Module):
         # 3) Declare self.hidden_to_logits_weight and self.hidden_to_logits_bias as nn.Parameter
         self.hidden_to_logits_weight = nn.Parameter(torch.empty(self.hidden_size, self.n_classes)) #Construct the weight matrix (U) from hidden layer
         nn.init.xavier_uniform_(self.hidden_to_logits_weight) #Initialize the weight matrix (U) from hidden layer
-        self.hidden_to_logits_bias = nn.Parameter(torch.empty(self.n_classes, 1)) #Construct the bias matrix (b2) from hidden layer
+        self.hidden_to_logits_bias = nn.Parameter(torch.empty(self.n_classes)) #Construct the bias matrix (b2) from hidden layer
         nn.init.uniform_(self.hidden_to_logits_bias) #Initialize the bias matrix (b2) from hidden layer
 
         
@@ -120,10 +120,16 @@ class ParserModel(nn.Module):
         ###     Flatten: https://pytorch.org/docs/stable/generated/torch.flatten.html
 
         ### END YOUR CODE
+        
 
-        x = self.embeddings[w]  # vector is created with for each index in w the embedding for the word
-        batchsize = x.size(0) # batchsize is the first dimension of x
-        x = x.view(batchsize, -1)  # reshape with view to a 2d tensor
+        # 1) For each index `i` in `w`, select `i`th vector from self.embeddings
+        x = torch.index_select(self.embeddings, 0, torch.flatten(w))
+        x = x.view(w.shape[0], -1)
+
+
+        # x = self.embeddings[w]  # vector is created with for each index in w the embedding for the word
+        # batchsize = x.size(0) # batchsize is the first dimension of x
+        # x = x.view(batchsize, -1)  # reshape with view to a 2d tensor
 
         return x
 
@@ -159,6 +165,7 @@ class ParserModel(nn.Module):
         ###     Matrix product: https://pytorch.org/docs/stable/torch.html#torch.matmul
         ###     ReLU: https://pytorch.org/docs/stable/nn.html?highlight=relu#torch.nn.functional.relu
 
+        
         x = self.embedding_lookup(w) # get the embedding for the words in w
         x = torch.matmul(x, self.embed_to_hidden_weight) + self.embed_to_hidden_bias # matrix multiplication with W and add b1
         h = F.relu(x) # apply relu
