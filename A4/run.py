@@ -124,6 +124,7 @@ def train_for_epoch(parser, train_data, dev_data, optimizer, loss_func, batch_si
             prog.update(1)
             loss_meter.update(loss.item())
 
+
     print ("Average Train Loss: {}".format(loss_meter.avg))
 
     print("Evaluating on dev set",)
